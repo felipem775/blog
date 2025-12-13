@@ -12,13 +12,16 @@ export default defineConfig(({ mode }) => {
     // Esto es crucial para que GitHub Pages funcione en subdirectorios
     base: './',
     define: {
-      // Exponemos las variables explícitamente para que estén disponibles en el código cliente
-      'process.env.GITHUB_OWNER': JSON.stringify(env.GITHUB_OWNER),
-      'process.env.GITHUB_REPO': JSON.stringify(env.GITHUB_REPO),
-      'process.env.GITHUB_TOKEN': JSON.stringify(env.GITHUB_TOKEN),
-      'process.env.BLOG_MODE': JSON.stringify(env.BLOG_MODE),
-      // Fallback para evitar crashes
-      'process.env': {}
+      // Definimos process.env como un objeto que contiene nuestras variables.
+      // Esto permite que tanto 'process.env.VAR' como 'process.env["VAR"]' funcionen correctamente.
+      'process.env': JSON.stringify({
+        GITHUB_OWNER: env.GITHUB_OWNER,
+        GITHUB_REPO: env.GITHUB_REPO,
+        GITHUB_TOKEN: env.GITHUB_TOKEN,
+        BLOG_MODE: env.BLOG_MODE,
+        BLOG_DESC: env.BLOG_DESC,
+        API_KEY: env.API_KEY
+      })
     }
   }
 })

@@ -29,8 +29,10 @@ const App: React.FC = () => {
   const defaultOwner = getEnv('GITHUB_OWNER', 'felipem775');
   const defaultRepo = getEnv('GITHUB_REPO', 'blog');
   const defaultToken = getEnv('GITHUB_TOKEN', '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');
-  // Check if BLOG_MODE is explicitly set to 'true'
-  const blogMode = getEnv('BLOG_MODE', 'false') === 'true';
+  
+  // Check if BLOG_MODE is explicitly set to 'true', default to true now
+  const blogMode = getEnv('BLOG_MODE', 'true') === 'true';
+  const blogDescTemplate = getEnv('BLOG_DESC', 'El blog de {{owner}}');
 
   const [repoConfig, setRepoConfig] = useState<RepoConfig>({ 
     owner: defaultOwner, 
@@ -195,8 +197,16 @@ const App: React.FC = () => {
     <div className="space-y-6 animate-fade-in">
        <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-6 mb-8 text-center sm:text-left sm:flex sm:items-center sm:justify-between">
          <div>
-            <h2 className="text-2xl font-bold text-indigo-900 capitalize">Blog: {repoConfig.name}</h2>
-            <p className="text-indigo-700 mt-1 mb-3">Explorando issues de <span className="font-semibold">{repoConfig.owner}</span> como si fueran artículos.</p>
+            {blogMode ? (
+              <h2 className="text-2xl font-bold text-indigo-900 capitalize mb-3">
+                {blogDescTemplate.replace('{{owner}}', repoConfig.owner)}
+              </h2>
+            ) : (
+              <>
+                <h2 className="text-2xl font-bold text-indigo-900 capitalize">Blog: {repoConfig.name}</h2>
+                <p className="text-indigo-700 mt-1 mb-3">Explorando issues de <span className="font-semibold">{repoConfig.owner}</span> como si fueran artículos.</p>
+              </>
+            )}
             <a 
               href={`https://github.com/${repoConfig.owner}/${repoConfig.name}/issues.atom`} 
               target="_blank" 
