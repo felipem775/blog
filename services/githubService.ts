@@ -2,7 +2,7 @@ import { GitHubIssue, GitHubComment } from '../types';
 
 const BASE_URL = 'https://api.github.com/repos';
 
-const getHeaders = (token?: string) => {
+const getHeaders = (token?: string): Record<string, string> => {
   return token ? { 'Authorization': `Bearer ${token}` } : {};
 };
 
