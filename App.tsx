@@ -26,8 +26,8 @@ const getEnv = (key: string, fallback: string) => {
 
 const App: React.FC = () => {
   // State
-  const defaultOwner = getEnv('GITHUB_OWNER', 'facebook');
-  const defaultRepo = getEnv('GITHUB_REPO', 'react');
+  const defaultOwner = getEnv('GITHUB_OWNER', 'felipem775');
+  const defaultRepo = getEnv('GITHUB_REPO', 'blog');
   const defaultToken = getEnv('GITHUB_TOKEN', '');
 
   const [repoConfig, setRepoConfig] = useState<RepoConfig>({ 
@@ -260,7 +260,7 @@ const App: React.FC = () => {
                 <h3 className="text-lg font-bold text-gray-900 mb-3 group-hover:text-indigo-600 transition-colors line-clamp-2">
                   {issue.title}
                 </h3>
-                <MarkdownText content={issue.body} truncate class="text-gray-600 text-sm line-clamp-4" />
+                <MarkdownText content={issue.body} truncate className="text-gray-600 text-sm line-clamp-4" />
               </div>
               <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
                 <div className="flex items-center text-gray-500 text-sm">
@@ -314,7 +314,7 @@ const App: React.FC = () => {
                </a>
             </div>
             
-            <MarkdownText content={selectedIssue.body} class="text-lg leading-relaxed text-gray-800" />
+            <MarkdownText content={selectedIssue.body} className="text-lg leading-relaxed text-gray-800" />
 
             <div className="mt-8 flex flex-wrap gap-2">
               {selectedIssue.labels.map(label => (
@@ -390,7 +390,7 @@ const App: React.FC = () => {
                         <span className="text-xs text-gray-400">{new Date(comment.created_at).toLocaleDateString()}</span>
                      </div>
                     <div className="bg-white rounded-2xl rounded-tl-none p-5 shadow-sm border border-gray-200 hover:border-indigo-300 transition-colors relative">
-                      <MarkdownText content={comment.body} class="text-gray-700 text-sm" />
+                      <MarkdownText content={comment.body} className="text-gray-700 text-sm" />
                     </div>
                   </div>
                 </div>
