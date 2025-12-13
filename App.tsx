@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ViewState, GitHubIssue, GitHubComment, RepoConfig } from './types';
 import { fetchIssues, fetchComments } from './services/githubService';
-import { summarizeDiscussion } from './services/geminiService';
 import { MarkdownText } from './components/MarkdownText';
 import { 
   ChatBubbleLeftRightIcon, 
@@ -12,19 +11,24 @@ import {
   PencilSquareIcon,
   RssIcon,
   XMarkIcon,
-  KeyIcon,
-  SparklesIcon
+  KeyIcon
 } from '@heroicons/react/24/outline';
+
+// Helper to safely access env vars
+const getEnv = (key: string, fallback: string) => {
+  try {
+    // @ts-ignore
+    return process.env[key] || fallback;
+  } catch {
+    return fallback;
+  }
+};
 
 const App: React.FC = () => {
   // State
-  // Use direct process.env access to ensure Vite define replacement works
-  // @ts-ignore
-  const defaultOwner = process.env.GITHUB_OWNER || 'facebook';
-  // @ts-ignore
-  const defaultRepo = process.env.GITHUB_REPO || 'react';
-  // @ts-ignore
-  const defaultToken = process.env.GITHUB_TOKEN || '';
+  const defaultOwner = getEnv('GITHUB_OWNER', 'felipem775');
+  const defaultRepo = getEnv('GITHUB_REPO', 'blog');
+  const defaultToken = getEnv('GITHUB_TOKEN', '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');
 
   const [repoConfig, setRepoConfig] = useState<RepoConfig>({ 
     owner: defaultOwner, 
@@ -46,10 +50,6 @@ const App: React.FC = () => {
   const [loadingComments, setLoadingComments] = useState(false);
   
   const [error, setError] = useState<string | null>(null);
-
-  // Gemini Summary State
-  const [summary, setSummary] = useState<string | null>(null);
-  const [summarizing, setSummarizing] = useState(false);
 
   // Load Issues
   const loadIssues = useCallback(async () => {
@@ -76,7 +76,6 @@ const App: React.FC = () => {
     setSelectedIssue(issue);
     setView(ViewState.DETAIL);
     setComments([]);
-    setSummary(null);
     setLoadingComments(true);
 
     try {
@@ -93,7 +92,6 @@ const App: React.FC = () => {
     setView(ViewState.LIST);
     setSelectedIssue(null);
     setComments([]);
-    setSummary(null);
   };
 
   const handleRepoSearch = (e: React.FormEvent) => {
@@ -114,20 +112,6 @@ const App: React.FC = () => {
 
   const clearLabelFilter = () => {
     setSelectedLabel(null);
-  };
-
-  const handleSummarize = async () => {
-    if (!selectedIssue) return;
-    setSummarizing(true);
-    try {
-      const text = await summarizeDiscussion(selectedIssue, comments);
-      setSummary(text);
-    } catch (e) {
-      console.error("Failed to summarize:", e);
-      setSummary("Error al generar el resumen.");
-    } finally {
-      setSummarizing(false);
-    }
   };
 
   // --- Renders ---
@@ -276,7 +260,7 @@ const App: React.FC = () => {
                 <h3 className="text-lg font-bold text-gray-900 mb-3 group-hover:text-indigo-600 transition-colors line-clamp-2">
                   {issue.title}
                 </h3>
-                <MarkdownText content={issue.body} truncate className="text-gray-600 text-sm line-clamp-4" />
+                <MarkdownText content={issue.body} truncate class="text-gray-600 text-sm line-clamp-4" />
               </div>
               <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
                 <div className="flex items-center text-gray-500 text-sm">
@@ -320,37 +304,17 @@ const App: React.FC = () => {
                     <p className="text-xs text-gray-500">Publicado el {new Date(selectedIssue.created_at).toLocaleDateString()}</p>
                   </div>
                </div>
-               <div className="flex gap-2 items-center">
-                <button
-                    onClick={handleSummarize}
-                    disabled={summarizing}
-                    className="hidden sm:inline-flex items-center px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs rounded-full transition-colors border border-indigo-200"
-                 >
-                    <SparklesIcon className={`w-3 h-3 mr-1 ${summarizing ? 'animate-spin' : ''}`} />
-                    {summarizing ? 'Resumiendo...' : 'Resumir con IA'}
-                 </button>
-                 <a 
-                   href={selectedIssue.html_url} 
-                   target="_blank" 
-                   rel="noopener noreferrer"
-                   className="hidden sm:inline-flex items-center px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded-full transition-colors"
-                 >
-                   Ver en GitHub
-                 </a>
-               </div>
+               <a 
+                 href={selectedIssue.html_url} 
+                 target="_blank" 
+                 rel="noopener noreferrer"
+                 className="hidden sm:inline-flex items-center px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded-full transition-colors"
+               >
+                 Ver en GitHub
+               </a>
             </div>
-
-            {summary && (
-              <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-6 mb-8 animate-fade-in">
-                  <h3 className="text-sm font-bold text-indigo-900 mb-2 flex items-center">
-                      <SparklesIcon className="w-4 h-4 mr-1.5 text-indigo-600" />
-                      Resumen de la discusión
-                  </h3>
-                  <MarkdownText content={summary} className="text-indigo-800 text-sm" />
-              </div>
-            )}
             
-            <MarkdownText content={selectedIssue.body} className="text-lg leading-relaxed text-gray-800" />
+            <MarkdownText content={selectedIssue.body} class="text-lg leading-relaxed text-gray-800" />
 
             <div className="mt-8 flex flex-wrap gap-2">
               {selectedIssue.labels.map(label => (
@@ -426,7 +390,7 @@ const App: React.FC = () => {
                         <span className="text-xs text-gray-400">{new Date(comment.created_at).toLocaleDateString()}</span>
                      </div>
                     <div className="bg-white rounded-2xl rounded-tl-none p-5 shadow-sm border border-gray-200 hover:border-indigo-300 transition-colors relative">
-                      <MarkdownText content={comment.body} className="text-gray-700 text-sm" />
+                      <MarkdownText content={comment.body} class="text-gray-700 text-sm" />
                     </div>
                   </div>
                 </div>

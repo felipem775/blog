@@ -18,7 +18,7 @@ export const fetchIssues = async (owner: string, repo: string, label?: string, t
     });
 
     if (!response.ok) {
-      if (response.status === 404) throw new Error(`Repositorio "${owner}/${repo}" no encontrado o privado (requiere token).`);
+      if (response.status === 404) throw new Error("Repositorio no encontrado o privado (requiere token).");
       if (response.status === 403) throw new Error("Límite de API excedido o sin permisos.");
       if (response.status === 401) throw new Error("Token inválido.");
       throw new Error("Error al cargar los posts.");
