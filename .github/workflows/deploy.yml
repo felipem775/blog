@@ -35,8 +35,8 @@ jobs:
         run: npm run build
         env:
           # Si deseas configurar valores por defecto para el build, puedes hacerlo aquí
-          GITHUB_OWNER: felipem775
-          GITHUB_REPO: blog
+          GITHUB_OWNER: facebook
+          GITHUB_REPO: react
           CI: false
 
       - name: Upload artifact
