@@ -29,6 +29,8 @@ const App: React.FC = () => {
   const defaultOwner = getEnv('GITHUB_OWNER', 'felipem775');
   const defaultRepo = getEnv('GITHUB_REPO', 'blog');
   const defaultToken = getEnv('GITHUB_TOKEN', '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');
+  // Check if BLOG_MODE is explicitly set to 'true'
+  const blogMode = getEnv('BLOG_MODE', 'false') === 'true';
 
   const [repoConfig, setRepoConfig] = useState<RepoConfig>({ 
     owner: defaultOwner, 
@@ -57,7 +59,14 @@ const App: React.FC = () => {
     setError(null);
     try {
       const data = await fetchIssues(repoConfig.owner, repoConfig.name, selectedLabel || undefined, repoConfig.token);
-      setIssues(data);
+      
+      // If blog mode is active, filter only issues created by the repo owner
+      if (blogMode) {
+        const filteredData = data.filter(issue => issue.user.login === repoConfig.owner);
+        setIssues(filteredData);
+      } else {
+        setIssues(data);
+      }
     } catch (err: any) {
       console.error("Failed to load issues:", err);
       setError(err.message || 'Error desconocido');
@@ -65,7 +74,7 @@ const App: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [repoConfig, selectedLabel]);
+  }, [repoConfig, selectedLabel, blogMode]);
 
   useEffect(() => {
     loadIssues();
@@ -124,36 +133,38 @@ const App: React.FC = () => {
           <h1 className="text-xl font-bold text-gray-900">GitBlog</h1>
         </div>
 
-        <form onSubmit={handleRepoSearch} className="flex flex-col sm:flex-row items-center gap-2 bg-gray-100 rounded-lg p-1.5 border border-gray-200 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 w-full sm:w-auto">
-          <div className="flex items-center w-full sm:w-auto gap-1">
-             <span className="text-gray-400 text-sm pl-1">github.com/</span>
-             <input 
-               className="bg-transparent text-sm text-gray-800 outline-none w-full sm:w-24 placeholder-gray-400"
-               placeholder="owner"
-               value={tempOwner}
-               onChange={(e) => setTempOwner((e.target as HTMLInputElement).value)}
-             />
-             <span className="text-gray-400">/</span>
-             <input 
-               className="bg-transparent text-sm text-gray-800 outline-none w-full sm:w-24 placeholder-gray-400"
-               placeholder="repo"
-               value={tempRepo}
-               onChange={(e) => setTempRepo((e.target as HTMLInputElement).value)}
-             />
-          </div>
-          
-          <div className="flex items-center w-full sm:w-auto border-t sm:border-t-0 sm:border-l border-gray-300 pt-1 sm:pt-0 sm:pl-2 mt-1 sm:mt-0">
-            <KeyIcon className="h-4 w-4 text-gray-400 mr-1" />
-            <input 
-              className="bg-transparent text-sm text-gray-800 outline-none w-full sm:w-24 placeholder-gray-400"
-              placeholder="Token (opcional)"
-              type="password"
-              value={tempToken}
-              onChange={(e) => setTempToken((e.target as HTMLInputElement).value)}
-            />
-            <button type="submit" className="text-indigo-600 hover:text-indigo-800 text-sm font-medium px-2 ml-1">Ir</button>
-          </div>
-        </form>
+        {!blogMode && (
+          <form onSubmit={handleRepoSearch} className="flex flex-col sm:flex-row items-center gap-2 bg-gray-100 rounded-lg p-1.5 border border-gray-200 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 w-full sm:w-auto">
+            <div className="flex items-center w-full sm:w-auto gap-1">
+               <span className="text-gray-400 text-sm pl-1">github.com/</span>
+               <input 
+                 className="bg-transparent text-sm text-gray-800 outline-none w-full sm:w-24 placeholder-gray-400"
+                 placeholder="owner"
+                 value={tempOwner}
+                 onChange={(e) => setTempOwner((e.target as HTMLInputElement).value)}
+               />
+               <span className="text-gray-400">/</span>
+               <input 
+                 className="bg-transparent text-sm text-gray-800 outline-none w-full sm:w-24 placeholder-gray-400"
+                 placeholder="repo"
+                 value={tempRepo}
+                 onChange={(e) => setTempRepo((e.target as HTMLInputElement).value)}
+               />
+            </div>
+            
+            <div className="flex items-center w-full sm:w-auto border-t sm:border-t-0 sm:border-l border-gray-300 pt-1 sm:pt-0 sm:pl-2 mt-1 sm:mt-0">
+              <KeyIcon className="h-4 w-4 text-gray-400 mr-1" />
+              <input 
+                className="bg-transparent text-sm text-gray-800 outline-none w-full sm:w-24 placeholder-gray-400"
+                placeholder="Token (opcional)"
+                type="password"
+                value={tempToken}
+                onChange={(e) => setTempToken((e.target as HTMLInputElement).value)}
+              />
+              <button type="submit" className="text-indigo-600 hover:text-indigo-800 text-sm font-medium px-2 ml-1">Ir</button>
+            </div>
+          </form>
+        )}
       </div>
     </header>
   );
@@ -236,9 +247,13 @@ const App: React.FC = () => {
               <div className="p-6 flex-1">
                 <div className="flex items-center justify-between mb-3">
                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <img src={issue.user.avatar_url} alt={issue.user.login} className="w-5 h-5 rounded-full" />
-                      <span className="font-medium text-gray-700">{issue.user.login}</span>
-                      <span>•</span>
+                      {!blogMode && (
+                        <>
+                          <img src={issue.user.avatar_url} alt={issue.user.login} className="w-5 h-5 rounded-full" />
+                          <span className="font-medium text-gray-700">{issue.user.login}</span>
+                          <span>•</span>
+                        </>
+                      )}
                       <span>{new Date(issue.created_at).toLocaleDateString()}</span>
                    </div>
                    {issue.labels.length > 0 && (
@@ -298,9 +313,13 @@ const App: React.FC = () => {
             
             <div className="flex items-center justify-between border-b border-gray-100 pb-6 mb-8">
                <div className="flex items-center gap-3">
-                  <img src={selectedIssue.user.avatar_url} alt={selectedIssue.user.login} className="w-10 h-10 rounded-full border border-gray-200" />
+                  {!blogMode && (
+                    <img src={selectedIssue.user.avatar_url} alt={selectedIssue.user.login} className="w-10 h-10 rounded-full border border-gray-200" />
+                  )}
                   <div>
-                    <p className="text-sm font-bold text-gray-900">{selectedIssue.user.login}</p>
+                    {!blogMode && (
+                      <p className="text-sm font-bold text-gray-900">{selectedIssue.user.login}</p>
+                    )}
                     <p className="text-xs text-gray-500">Publicado el {new Date(selectedIssue.created_at).toLocaleDateString()}</p>
                   </div>
                </div>
