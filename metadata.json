@@ -1,5 +1,6 @@
 {
   "name": "GitBlog Viewer",
   "description": "Transforma cualquier repositorio público de GitHub en un blog interactivo. Los issues se convierten en artículos y los hilos en secciones de comentarios.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": []
 }

@@ -17,7 +17,6 @@ export default defineConfig(({ mode }) => {
       'process.env': JSON.stringify({
         GITHUB_OWNER: env.GITHUB_OWNER,
         GITHUB_REPO: env.GITHUB_REPO,
-        GITHUB_TOKEN: env.GITHUB_TOKEN,
         BLOG_MODE: env.BLOG_MODE,
         BLOG_DESC: env.BLOG_DESC,
         API_KEY: env.API_KEY

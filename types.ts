@@ -39,5 +39,4 @@ export enum ViewState {
 export interface RepoConfig {
   owner: string;
   name: string;
-  token?: string;
 }
